@@ -9,7 +9,7 @@ import nkGmshRoutines.generate__coneShape as con
 # === generate magnet shape                             === #
 # ========================================================= #
 
-def generate__magnet( lc=0.4, side="+" ):
+def generate__magnetParts( side="+" ):
 
     cnsFile = "dat/parameter.conf"
     import nkUtilities.load__constants as lcn
@@ -18,7 +18,7 @@ def generate__magnet( lc=0.4, side="+" ):
     # ------------------------------------------------- #
     # --- [1] pole making                           --- #
     # ------------------------------------------------- #
-    generate__pole( lc=lc , r1=0.0  , r2=const["r_pole"], \
+    generate__pole( lc=const["lc_pole"], r1=0.0  , r2=const["r_pole"], \
                     z1=0.0, z2=const["z_gap"], z3=const["z_pole"], side=side )
 
     # ------------------------------------------------- #
@@ -32,7 +32,7 @@ def generate__magnet( lc=0.4, side="+" ):
     z2 = const["h_iair1"]
     z3 = const["h_iair1"]+const["h_coil"]
     z4 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]
-    generate__coilslot( lc=lc, r1=r1, r2=r2, r3=r3, r4=r4, \
+    generate__coilslot( lc=const["lc_coil"], r1=r1, r2=r2, r3=r3, r4=r4, \
                         z1=z1, z2=z2, z3=z3, z4=z4, side=side )
 
     # ------------------------------------------------- #
@@ -46,7 +46,7 @@ def generate__magnet( lc=0.4, side="+" ):
     z2 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]
     z3 = z2+const["h_yoke"]-const["h_cut"]
     z4 = z2+const["h_yoke"]
-    generate__yoke    ( lc=lc, r1=r1, r2=r2, r3=r3, r4=r4, \
+    generate__yoke    ( lc=const["lc_yoke"], r1=r1, r2=r2, r3=r3, r4=r4, \
                         z1=z1, z2=z2, z3=z3, z4=z4, side=side )
     
     # ------------------------------------------------- #
@@ -60,7 +60,7 @@ def generate__magnet( lc=0.4, side="+" ):
     z3 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]+const["h_yoke"]
     z2 = z3-const["h_cut"]
     z4 = z3+const["h_oair"]
-    generate__outAir  ( lc=lc, r1=r1, r2=r2, r3=r3, r4=r4, \
+    generate__outAir  ( lc=const["lc_oair"], r1=r1, r2=r2, r3=r3, r4=r4, \
                         z1=z1, z2=z2, z3=z3, z4=z4, side=side )
     
 
