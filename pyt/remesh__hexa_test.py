@@ -54,52 +54,60 @@ for line in lines:
 
 # -- [5-2] mesh alignment                      --  #
 
-# physNumKeys = list( meshdict.keys() )
+physNumKeys = list( meshdict.keys() )
+print( physNumKeys )
+# print( [ meshdict[key] for key in physNumKeys ] )
+# sys.exit()
 
-# for key in physNumKeys:
-#     # -- setting -- #
-#     physNum    = ( meshdict[key] )[0]
-#     meshsize   = ( meshdict[key] )[1]
-#     # -- volume  -- #
-#     v_entities = gmsh.model.getEntitiesForPhysicalGroup( voluDim, physNum )
-#     v_dimtags  = [ ( voluDim, v_enti ) for v_enti in v_entities ]
-#     # -- surface -- #
-#     s_dimtags  = gmsh.model.getBoundary( v_dimtags, oriented=False )
-#     s_entities = [ int( s_dimtag[1] ) for s_dimtag in s_dimtags ]
-#     # -- line    -- #
-#     l_dimtags  = gmsh.model.getBoundary( s_dimtags, combined=False, oriented=False )
-#     l_dimtags  = list( set( l_dimtags ) )
-#     l_entities = [ int( l_dimtag[1] ) for l_dimtag in l_dimtags ]
+physNumKeys = [ "gap", "pole", "coil", "outAir" ]
+physNumKeys = [ "yoke" ]
+
+for key in physNumKeys:
+    # -- setting -- #
+    physNum    = ( meshdict[key] )[0]
+    meshsize   = ( meshdict[key] )[1]
+    # -- volume  -- #
+    v_entities = gmsh.model.getEntitiesForPhysicalGroup( voluDim, physNum )
+    v_dimtags  = [ ( voluDim, v_enti ) for v_enti in v_entities ]
+    # -- surface -- #
+    s_dimtags  = gmsh.model.getBoundary( v_dimtags, oriented=False )
+    s_entities = [ int( s_dimtag[1] ) for s_dimtag in s_dimtags ]
+    # -- line    -- #
+    l_dimtags  = gmsh.model.getBoundary( s_dimtags, combined=False, oriented=False )
+    l_dimtags  = list( set( l_dimtags ) )
+    l_entities = [ int( l_dimtag[1] ) for l_dimtag in l_dimtags ]
     
-#     # -- inifinite ==> line   -- #
-#     NN = 6
-#     is_rectangle  = True
-#     nSmooth       = 100
-#     for il,l_enti in enumerate(l_entities):
-#         gmsh.model.mesh.setTransfiniteCurve( l_enti, NN )
-#     for iS,s_enti in enumerate(s_entities):
-#         hlines    = gmsh.model.getBoundary( (surfDim,s_enti), combined=False, oriented=False )
-#         if ( len( hlines ) <= 4 ):
-#             gmsh.model.mesh.setTransfiniteSurface( s_enti )
-#         if is_rectangle:
-#             gmsh.model.mesh.setRecombine( surfDim, s_enti )
-#             gmsh.model.mesh.setSmoothing( surfDim, s_enti, nSmooth)
-#     for iv,v_enti in enumerate(v_entities):
-#         hsurfs    = gmsh.model.getBoundary( (voluDim,v_enti), oriented=False )
-#         checker   = True
-#         if ( len( hsurfs ) <= 6 ):
-#             for iS,s_dimtag in enumerate(hsurfs):
-#                 hlines = gmsh.model.getBoundary( s_dimtag, combined=False, oriented=False )
-#                 if ( len( hlines ) > 4 ):
-#                     checker = False
-#                     break
-#             if ( checker is True ):
-#                 for iS,s_dimtag in enumerate(hsurfs):
-#                     gmsh.model.mesh.setTransfiniteSurface( s_dimtag[1] )
-#                     if is_rectangle:
-#                         gmsh.model.mesh.setRecombine( surfDim, s_enti )
-#                         gmsh.model.mesh.setSmoothing( surfDim, s_enti, nSmooth)
-#                 gmsh.model.mesh.setTransfiniteVolume( v_enti )
+    # -- inifinite ==> line   -- #
+    NN = 6
+    is_rectangle  = True
+    nSmooth       = 100
+    for il,l_enti in enumerate(l_entities):
+        gmsh.model.mesh.setTransfiniteCurve( l_enti, NN )
+    # for iS,s_enti in enumerate(s_entities):
+    #     hlines    = gmsh.model.getBoundary( (surfDim,s_enti), combined=False, oriented=False )
+    #     if ( len( hlines ) <= 4 ):
+    #         gmsh.model.mesh.setTransfiniteSurface( s_enti )
+    #     if is_rectangle:
+    #         gmsh.model.mesh.setRecombine( surfDim, s_enti )
+    #         gmsh.model.mesh.setSmoothing( surfDim, s_enti, nSmooth)
+    for iv,v_enti in enumerate(v_entities):
+        hsurfs    = gmsh.model.getBoundary( (voluDim,v_enti), oriented=True )
+        checker   = True
+        print( "(key,v_enti,len(hsurfs)) = {0}, {1}, {2}".format( key, v_enti, len(hsurfs) )  )
+        if ( len( hsurfs ) <= 6 ):
+            for iS,s_dimtag in enumerate(hsurfs):
+                hlines = gmsh.model.getBoundary( s_dimtag, combined=False, oriented=False )
+                if ( len( hlines ) > 4 ):
+                    checker = False
+                    break
+            if ( checker is True ):
+                print( key, meshdict[key] )
+                for iS,s_dimtag in enumerate(hsurfs):
+                    gmsh.model.mesh.setTransfiniteSurface( s_dimtag[1] )
+                    if is_rectangle:
+                        gmsh.model.mesh.setRecombine( surfDim, s_dimtag[1] )
+                        gmsh.model.mesh.setSmoothing( surfDim, s_dimtag[1], nSmooth)
+                gmsh.model.mesh.setTransfiniteVolume( v_enti )
         
     # for iv,v_enti in enumerate(v_entities):
     #     v_dimtag   = [(voluDim,v_enti)]
