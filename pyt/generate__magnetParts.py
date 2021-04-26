@@ -9,7 +9,7 @@ import nkGmshRoutines.generate__sector180 as sec
 # === generate magnet shape                             === #
 # ========================================================= #
 
-def generate__magnetParts( side="+" ):
+def generate__magnetParts( side="+", hexahedral=False ):
 
     cnsFile = "dat/parameter.conf"
     import nkUtilities.load__constants as lcn
@@ -19,7 +19,8 @@ def generate__magnetParts( side="+" ):
     # --- [1] pole making                           --- #
     # ------------------------------------------------- #
     generate__pole( lc=const["lc_pole"], r1=0.0  , r2=const["r_pole"], \
-                    z1=0.0, z2=const["z_gap"], z3=const["z_pole"], side=side )
+                    z1=0.0, z2=const["z_gap"], z3=const["z_pole"], \
+                    side=side, hexahedral=hexahedral )
 
     # ------------------------------------------------- #
     # --- [2] coil making                           --- #
@@ -33,7 +34,7 @@ def generate__magnetParts( side="+" ):
     z3 = const["h_iair1"]+const["h_coil"]
     z4 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]
     generate__coilslot( lc=const["lc_coil"], r1=r1, r2=r2, r3=r3, r4=r4, \
-                        z1=z1, z2=z2, z3=z3, z4=z4, side=side )
+                        z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
 
     # ------------------------------------------------- #
     # --- [3]  yoke making                          --- #
@@ -47,7 +48,7 @@ def generate__magnetParts( side="+" ):
     z3 = z2+const["h_yoke"]-const["h_cut"]
     z4 = z2+const["h_yoke"]
     generate__yoke    ( lc=const["lc_yoke"], r1=r1, r2=r2, r3=r3, r4=r4, \
-                        z1=z1, z2=z2, z3=z3, z4=z4, side=side )
+                        z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
     
     # ------------------------------------------------- #
     # --- [4]  outside Air making                   --- #
@@ -61,7 +62,7 @@ def generate__magnetParts( side="+" ):
     z2 = z3-const["h_cut"]
     z4 = z3+const["h_oair"]
     generate__outAir  ( lc=const["lc_oair"], r1=r1, r2=r2, r3=r3, r4=r4, \
-                        z1=z1, z2=z2, z3=z3, z4=z4, side=side )
+                        z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
     
 
     
@@ -69,14 +70,14 @@ def generate__magnetParts( side="+" ):
 # ===  generate pole parts                              === #
 # ========================================================= #
 def generate__pole( lc=0.2, r1=0.0, r2=0.7, \
-                    z1=0.0, z2=0.2, z3=0.7, side="+" ):
+                    z1=0.0, z2=0.2, z3=0.7, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate pole parts                   --- #
     # ------------------------------------------------- #
     origin  = [ 0.0, 0.0 ]
-    gap     = sec.generate__sector180( lc=lc, r1=r1, r2=r2, \
+    gap     = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, \
                                        zoffset=z1, height=z2-z1, defineVolu=True, side=side )
-    pole    = sec.generate__sector180( lc=lc, r1=r1, r2=r2, \
+    pole    = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, \
                                        zoffset=z2, height=z3-z2, defineVolu=True, side=side )
     return()
 
@@ -86,23 +87,23 @@ def generate__pole( lc=0.2, r1=0.0, r2=0.7, \
 # ===  generate coil & inner air parts                  === #
 # ========================================================= #
 def generate__coilslot( lc=0.2, r1=0.8, r2=0.9, r3=1.0, r4=1.1, \
-                        z1=0.0, z2=0.2, z3=0.4, z4=0.7, side="+" ):
+                        z1=0.0, z2=0.2, z3=0.4, z4=0.7, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate coil parts                   --- #
     # ------------------------------------------------- #
     print( r1, r2, r3, r4 )
     print( z1, z2, z3, z4 )
     origin  = [ 0.0, 0.0 ]
-    air_inn = sec.generate__sector180( lc=lc, r1=r1, r2=r2, \
-                                       zoffset=z1, height=z4-z1, defineVolu=True, side=side )
-    air_bot = sec.generate__sector180( lc=lc, r1=r2, r2=r3, \
-                                       zoffset=z1, height=z2-z1, defineVolu=True, side=side )
-    coil    = sec.generate__sector180( lc=lc, r1=r2, r2=r3, \
-                                       zoffset=z2, height=z3-z2, defineVolu=True, side=side )
-    air_top = sec.generate__sector180( lc=lc, r1=r2, r2=r3, \
-                                       zoffset=z3, height=z4-z3, defineVolu=True, side=side )
-    air_out = sec.generate__sector180( lc=lc, r1=r3, r2=r4, \
-                                       zoffset=z1, height=z4-z1, defineVolu=True, side=side )
+    air_inn = sec.generate__sector180( lc=lc, r1=r1, r2=r2, zoffset=z1, height=z4-z1, \
+                                       defineVolu=True, side=side, hexahedral=hexahedral )
+    air_bot = sec.generate__sector180( lc=lc, r1=r2, r2=r3, zoffset=z1, height=z2-z1, \
+                                       defineVolu=True, side=side, hexahedral=hexahedral )
+    coil    = sec.generate__sector180( lc=lc, r1=r2, r2=r3, zoffset=z2, height=z3-z2, \
+                                       defineVolu=True, side=side, hexahedral=hexahedral )
+    air_top = sec.generate__sector180( lc=lc, r1=r2, r2=r3, zoffset=z3, height=z4-z3, \
+                                       defineVolu=True, side=side, hexahedral=hexahedral )
+    air_out = sec.generate__sector180( lc=lc, r1=r3, r2=r4, zoffset=z1, height=z4-z1, \
+                                       defineVolu=True, side=side, hexahedral=hexahedral )
     return()
 
 
@@ -110,17 +111,17 @@ def generate__coilslot( lc=0.2, r1=0.8, r2=0.9, r3=1.0, r4=1.1, \
 # ===  generate york parts                              === #
 # ========================================================= #
 def generate__yoke( lc=0.2, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
-                    z1=0.0, z2=0.7, z3=1.1, z4=1.2, side="+" ):
+                    z1=0.0, z2=0.7, z3=1.1, z4=1.2, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate coil parts                   --- #
     # ------------------------------------------------- #
     origin      = [ 0.0, 0.0 ]
     origin_cone = [0.0,0.0,z3]
     th1,th2     = -90.0, 90.0
-    yoke_h      = sec.generate__sector180( lc=lc, r1=r1, r2=r4, \
-                                           zoffset=z2, height=z3-z2, defineVolu=True, side=side )
-    yoke_v      = sec.generate__sector180( lc=lc, r1=r2, r2=r4, \
-                                           zoffset=z1, height=z2-z1, defineVolu=True, side=side )
+    yoke_h      = sec.generate__sector180( lc=lc, r1=r1, r2=r4, zoffset=z2, height=z3-z2, \
+                                           defineVolu=True, side=side, hexahedral=hexahedral )
+    yoke_v      = sec.generate__sector180( lc=lc, r1=r2, r2=r4, zoffset=z1, height=z2-z1, \
+                                           defineVolu=True, side=side, hexahedral=hexahedral )
     york_c      = con.generate__coneShape( lc =lc , origin=origin_cone, r1=r4, r2=r3, \
                                            th1=th1, th2=th2, height=z4-z3, side=side )
     return()
@@ -130,17 +131,17 @@ def generate__yoke( lc=0.2, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
 # ===  generate outside Air region                      === #
 # ========================================================= #
 def generate__outAir( lc=0.2, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
-                      z1=0.0, z2=0.7, z3=1.1, z4=1.2, side="+" ):
+                      z1=0.0, z2=0.7, z3=1.1, z4=1.2, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] main outside air cylinder             --- #
     # ------------------------------------------------- #
     th1,th2     = -90.0, 90.0
     origin      = [ 0.0, 0.0 ]
     origin_cone = [0.0,0.0,z2]
-    oAir_h      = sec.generate__sector180( lc=lc, r1=r1, r2=r4, \
-                                           zoffset=z2, height=z4-z2, defineVolu=True, side=side )
-    oAir_v      = sec.generate__sector180( lc=lc, r1=r3, r2=r4, \
-                                           zoffset=z1, height=z2-z1, defineVolu=True, side=side )
+    oAir_h      = sec.generate__sector180( lc=lc, r1=r1, r2=r4, zoffset=z2, height=z4-z2, \
+                                           defineVolu=True, side=side, hexahedral=hexahedral )
+    oAir_v      = sec.generate__sector180( lc=lc, r1=r3, r2=r4, zoffset=z1, height=z2-z1, \
+                                           defineVolu=True, side=side, hexahedral=hexahedral )
     oAir_c      = con.generate__coneShape( lc =lc , origin=origin_cone, r1=r3, r2=r2, \
                                            th1=th1, th2=th2, height=z3-z2, side=side )
     # ------------------------------------------------- #
