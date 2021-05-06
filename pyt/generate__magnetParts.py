@@ -9,59 +9,88 @@ import nkGmshRoutines.generate__sector180 as sec
 # === generate magnet shape                             === #
 # ========================================================= #
 
-def generate__magnetParts( side="+", hexahedral=False ):
+def generate__magnetParts( side="+" ):
 
-    cnsFile = "dat/parameter.conf"
+    cnsFile    = "dat/parameter.conf"
     import nkUtilities.load__constants as lcn
-    const = lcn.load__constants( inpFile=cnsFile )
+    const      = lcn.load__constants( inpFile=cnsFile )
 
+    hexahedral = const["mesh.recombine"]
+    
+    r_pole     = const["geometry.r_pole"]
+    w_iair1    = const["geometry.w_iair1"]
+    w_iair2    = const["geometry.w_iair2"]
+    w_coil     = const["geometry.w_coil"]
+    w_yoke     = const["geometry.w_yoke"]
+    w_cut      = const["geometry.w_cut"]
+    w_oair     = const["geometry.w_oair"]
+
+    z_gap      = const["geometry.z_gap"]
+    z_pole     = const["geometry.z_pole"]
+    z_root     = const["geometry.z_root"]
+    
+    h_iair1    = const["geometry.h_iair1"]
+    h_iair2    = const["geometry.h_iair2"]
+    h_coil     = const["geometry.h_coil"]
+    h_yoke     = const["geometry.h_yoke"]
+    h_cut      = const["geometry.h_cut"]
+    h_oair     = const["geometry.h_oair"]
+
+    h_slot     = h_iair1 + h_coil + h_iair2
+        
+    
     # ------------------------------------------------- #
     # --- [1] pole making                           --- #
     # ------------------------------------------------- #
-    generate__pole( lc=const["lc_pole"], r1=0.0  , r2=const["r_pole"], \
-                    z1=0.0, z2=const["z_gap"], z3=const["z_pole"], \
-                    side=side, hexahedral=hexahedral )
-
+    if ( const["geometry.flat_pole"] ):
+        generate__pole( r1=0.0, r2=r_pole, z1=0.0, z2=z_gap, z3=z_pole, \
+                        side=side, hexahedral=hexahedral )
+    else:
+        if ( z_root != h_slot ):
+            sys.exit( "[generate__magnetParts] incompatible slot-depth and pole-root-length")
+        import generate__poleLayer as gpl
+        gpl.generate__poleLayer( side=side, z1=z_pole, z2=z_root, radius=r_pole )
+        
     # ------------------------------------------------- #
     # --- [2] coil making                           --- #
     # ------------------------------------------------- #
-    r1 = const["r_pole"]
-    r2 = const["r_pole"]+const["w_iair1"]
-    r3 = const["r_pole"]+const["w_iair1"]+const["w_coil"]
-    r4 = const["r_pole"]+const["w_iair1"]+const["w_coil"]+const["w_iair2"]
+    r1 = r_pole
+    r2 = r_pole + w_iair1
+    r3 = r_pole + w_iair1 + w_coil
+    r4 = r_pole + w_iair1 + w_coil + w_iair2
     z1 = 0.0
-    z2 = const["h_iair1"]
-    z3 = const["h_iair1"]+const["h_coil"]
-    z4 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]
-    generate__coilslot( lc=const["lc_coil"], r1=r1, r2=r2, r3=r3, r4=r4, \
+    z2 = h_iair1
+    z3 = h_iair1 + h_coil
+    z4 = h_iair1 + h_coil + h_iair2
+    generate__coilslot( r1=r1, r2=r2, r3=r3, r4=r4, \
                         z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
 
     # ------------------------------------------------- #
     # --- [3]  yoke making                          --- #
     # ------------------------------------------------- #
     r1 = 0.0
-    r2 = const["r_pole"]+const["w_iair1"]+const["w_coil"]+const["w_iair2"]
-    r3 = r2+const["w_yoke"]-const["w_cut"]
-    r4 = r2+const["w_yoke"]
+    r2 = r_pole + w_iair1 + w_coil + w_iair2
+    r3 = r2 + w_yoke-w_cut
+    r4 = r2 + w_yoke
     z1 = 0.0
-    z2 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]
-    z3 = z2+const["h_yoke"]-const["h_cut"]
-    z4 = z2+const["h_yoke"]
-    generate__yoke    ( lc=const["lc_yoke"], r1=r1, r2=r2, r3=r3, r4=r4, \
+    z2 = h_slot
+    z3 = h_slot + h_yoke - h_cut
+    z4 = h_slot + h_yoke
+    generate__yoke    ( r1=r1, r2=r2, r3=r3, r4=r4, \
                         z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
     
     # ------------------------------------------------- #
     # --- [4]  outside Air making                   --- #
     # ------------------------------------------------- #
     r1 = 0.0
-    r3 = const["r_pole"]+const["w_iair1"]+const["w_coil"]+const["w_iair2"]+const["w_yoke"]
-    r2 = r3-const["w_cut"]
-    r4 = r3+const["w_oair"]
+    r3 = r_pole + w_iair1 + w_coil + w_iair2 + w_yoke
+    r2 = r3 - w_cut
+    r4 = r3 + w_oair
     z1 = 0.0
-    z3 = const["h_iair1"]+const["h_coil"]+const["h_iair2"]+const["h_yoke"]
-    z2 = z3-const["h_cut"]
-    z4 = z3+const["h_oair"]
-    generate__outAir  ( lc=const["lc_oair"], r1=r1, r2=r2, r3=r3, r4=r4, \
+    z3 = h_slot + h_yoke
+    z2 = h_slot + h_yoke - h_cut
+    z4 = h_slot + h_yoke + h_oair
+    generate__outAir  ( r1=r1, r2=r2, r3=r3, r4=r4, \
                         z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
     
 
@@ -69,7 +98,7 @@ def generate__magnetParts( side="+", hexahedral=False ):
 # ========================================================= #
 # ===  generate pole parts                              === #
 # ========================================================= #
-def generate__pole( lc=0.2, r1=0.0, r2=0.7, \
+def generate__pole( lc=0.0, r1=0.0, r2=0.7, \
                     z1=0.0, z2=0.2, z3=0.7, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate pole parts                   --- #
@@ -86,13 +115,11 @@ def generate__pole( lc=0.2, r1=0.0, r2=0.7, \
 # ========================================================= #
 # ===  generate coil & inner air parts                  === #
 # ========================================================= #
-def generate__coilslot( lc=0.2, r1=0.8, r2=0.9, r3=1.0, r4=1.1, \
+def generate__coilslot( lc=0.0, r1=0.8, r2=0.9, r3=1.0, r4=1.1, \
                         z1=0.0, z2=0.2, z3=0.4, z4=0.7, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate coil parts                   --- #
     # ------------------------------------------------- #
-    print( r1, r2, r3, r4 )
-    print( z1, z2, z3, z4 )
     origin  = [ 0.0, 0.0 ]
     air_inn = sec.generate__sector180( lc=lc, r1=r1, r2=r2, zoffset=z1, height=z4-z1, \
                                        defineVolu=True, side=side, hexahedral=hexahedral )
@@ -110,7 +137,7 @@ def generate__coilslot( lc=0.2, r1=0.8, r2=0.9, r3=1.0, r4=1.1, \
 # ========================================================= #
 # ===  generate york parts                              === #
 # ========================================================= #
-def generate__yoke( lc=0.2, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
+def generate__yoke( lc=0.0, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
                     z1=0.0, z2=0.7, z3=1.1, z4=1.2, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate coil parts                   --- #
@@ -130,7 +157,7 @@ def generate__yoke( lc=0.2, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
 # ========================================================= #
 # ===  generate outside Air region                      === #
 # ========================================================= #
-def generate__outAir( lc=0.2, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
+def generate__outAir( lc=0.0, r1=0.0, r2=1.1, r3=1.4, r4=1.5, \
                       z1=0.0, z2=0.7, z3=1.1, z4=1.2, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] main outside air cylinder             --- #
