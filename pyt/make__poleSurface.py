@@ -22,10 +22,31 @@ def make__poleSurface():
     # ------------------------------------------------- #
     # --- [2] interpolation / gmsh <-> elmer        --- #
     # ------------------------------------------------- #
-    generate__mesh_to_interpolate( lc1=lc1, lc2=lc2, radius=radius, side=side )
-    convert__meshFormat( direction="gmsh->elmer" )
-    ret = interpolate__grid_to_mesh()
-    convert__meshFormat( direction="elmer->gmsh" )
+    nop     = True
+    
+    if ( side in ["+","+-","-+"] ):
+        generate__mesh_to_interpolate( lc1=lc1, lc2=lc2, radius=radius, side="+" )
+        convert__meshFormat( direction="gmsh->elmer" )
+        ret     = interpolate__grid_to_mesh( side="+" )
+        nop     = False
+
+    if ( side in ["-","+-","-+"] ):
+        generate__mesh_to_interpolate( lc1=lc1, lc2=lc2, radius=radius, side="-" )
+        convert__meshFormat( direction="gmsh->elmer" )
+        ret     = interpolate__grid_to_mesh( side="-" )
+        nop     = False
+
+    if ( side in ["+-","-+"]     ):
+        generate__mesh_to_interpolate( lc1=lc1, lc2=lc2, radius=radius, side="+-" )
+        convert__meshFormat( direction="gmsh->elmer" )
+        ret     = interpolate__grid_to_mesh( side="+-" )
+        nop     = False
+
+    if ( nop ):
+        print( "[make__poleSurface.py] no Operation !!! ERROR !!! " )
+    else:
+        convert__meshFormat( direction="elmer->gmsh", side=side )
+
     return()
 
 
@@ -86,8 +107,18 @@ def generate__mesh_to_interpolate( lc1=0.0, lc2=0.0, radius=1.0, side="+" ):
 # ========================================================= #
 # === convert mesh into easy-to-read format using Elmer === #
 # ========================================================= #
-def convert__meshFormat( direction=None ):
+def convert__meshFormat( direction=None, side="+" ):
 
+    if   ( side == "+" ):
+        inpFile = "dat/onmesh_right.dat"
+    elif ( side == "-" ):
+        inpFile = "dat/onmesh_left.dat"
+    elif ( side in ["+-","-+"] ):
+        inpFile = "dat/onmesh_both.dat"
+    else:
+        print( "[convert__meshFormat] side == {0} ??? ".format( side ) )
+        sys.exit()
+        
     if ( direction is None ):
         sys.exit( "[convert__meshFormat] direction ??? ( gmsh->elmer or elmer->gmsh ) " )
     if ( not( direction in [ "elmer->gmsh", "gmsh->elmer" ] ) ):
@@ -109,7 +140,7 @@ def convert__meshFormat( direction=None ):
     # --- [2] elmer -> gmsh mode                    --- #
     # ------------------------------------------------- #
     if   ( direction.lower() == "elmer->gmsh" ):
-
+        
         # -- copy original Elmer-Format       -- #
         print()
         print( "[reconvert__meshFormat] re-convert Elmer-Format into Gmsh.... " )
@@ -121,7 +152,6 @@ def convert__meshFormat( direction=None ):
         subprocess.call( cmd, shell=True )
         # -- modify nodes position            -- #
         import nkUtilities.load__pointFile as lpf
-        inpFile     = "dat/onmesh.dat"
         nodFile     = "msh/mesh3d/mesh.nodes"
         nodes       = lpf.load__pointFile( inpFile=inpFile, returnType="point" )
         mesh        = lpf.load__pointFile( inpFile=nodFile, returnType="point" )
@@ -142,8 +172,19 @@ def convert__meshFormat( direction=None ):
 # ========================================================= #
 # ===  interpolate__grid_to_mesh                        === #
 # ========================================================= #
-def interpolate__grid_to_mesh( gridFile="dat/mshape_svd.dat", meshFile="msh/mesh2d/mesh.nodes" ):
-
+def interpolate__grid_to_mesh( gridFile="dat/mshape_svd.dat", meshFile="msh/mesh2d/mesh.nodes", \
+                               side="+" ):
+    
+    if ( side == "+" ):
+        omsFile = "dat/onmesh_right.dat"
+        elmFile = "dat/mesh_right.elements"
+    if ( side == "-" ):
+        omsFile = "dat/onmesh_left.dat"
+        elmFile = "dat/mesh_left.elements"
+    if ( side in ["+-","-+"] ):
+        omsFile = "dat/onmesh_both.dat"
+        elmFile = "dat/mesh_both.elements"
+    
     # ------------------------------------------------- #
     # --- [1] load grid & mesh Data                 --- #
     # ------------------------------------------------- #
@@ -163,14 +204,13 @@ def interpolate__grid_to_mesh( gridFile="dat/mshape_svd.dat", meshFile="msh/mesh
     # --- [3] save in a File                        --- #
     # ------------------------------------------------- #
     #  -- [3-1] saving data                         --  #
-    outFile   = "dat/onmesh.dat"
     import nkUtilities.save__pointFile as spf
-    spf.save__pointFile( outFile=outFile, Data=ret )
+    spf.save__pointFile( outFile=omsFile, Data=ret )
     #  -- [3-2] copy mesh.elements                  --  #
-    cmd       = "cp msh/mesh3d/mesh.elements dat/mesh.elements"
+    cmd       = "cp msh/mesh2d/mesh.elements {0}".format( elmFile )
     print( "\n" + "[make__poleSurface] copy mesh.elements... " )
     print( cmd + "\n" )
-    subprocess.call( cmd.split() )
+    subprocess.call( cmd, shell=True )
     
     #  -- [3-3] save figure                         --  #
     import nkUtilities.cMapTri as cmt

@@ -48,8 +48,33 @@ def generate__magnetParts( side="+" ):
     else:
         if ( z_root != h_slot ):
             sys.exit( "[generate__magnetParts] incompatible slot-depth and pole-root-length")
+
         import generate__poleLayer as gpl
-        gpl.generate__poleLayer( side=side, z1=z_pole, z2=z_root, radius=r_pole )
+        if   ( side == "+" ):
+            gpl.generate__poleLayer( side="+", z1=z_pole, z2=z_root, radius=r_pole )
+
+        if   ( side == "-" ):
+            gpl.generate__poleLayer( side="-", z1=z_pole, z2=z_root, radius=r_pole )
+
+        elif ( side in ["+-","-+"] ):
+            # -- generate (+) side and save it -- #
+            gmsh.model.add( "pole_right" )
+            gpl.generate__poleLayer( side="+" , z1=z_pole, z2=z_root, radius=r_pole )
+            gmsh.write( "msh/pole_right.step" )
+            gmsh.model.remove()
+            # -- generate (+) side and save it -- #
+            gmsh.model.add( "pole_left" )
+            gpl.generate__poleLayer( side="-" , z1=z_pole, z2=z_root, radius=r_pole )
+            gmsh.write( "msh/pole_left.step" )
+            gmsh.model.remove()
+            # -- load each model again         -- #
+            gmsh.model.setCurrent( "model" )
+            gmsh.model.occ.importShapes( "msh/pole_right.step" )
+            gmsh.model.occ.importShapes( "msh/pole_left.step" )
+            gmsh.model.occ.synchronize()
+            gmsh.model.occ.removeAllDuplicates()
+            gmsh.model.occ.synchronize()
+            
         
     # ------------------------------------------------- #
     # --- [2] coil making                           --- #
@@ -62,8 +87,12 @@ def generate__magnetParts( side="+" ):
     z2 = h_iair1
     z3 = h_iair1 + h_coil
     z4 = h_iair1 + h_coil + h_iair2
-    generate__coilslot( r1=r1, r2=r2, r3=r3, r4=r4, \
-                        z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
+    if ( side in ["+","+-","-+"] ):
+        generate__coilslot( r1=r1, r2=r2, r3=r3, r4=r4, \
+                            z1=z1, z2=z2, z3=z3, z4=z4, side="+", hexahedral=hexahedral )
+    if ( side in ["-","+-","-+"] ):
+        generate__coilslot( r1=r1, r2=r2, r3=r3, r4=r4, \
+                            z1=z1, z2=z2, z3=z3, z4=z4, side="-", hexahedral=hexahedral )
 
     # ------------------------------------------------- #
     # --- [3]  yoke making                          --- #
@@ -76,8 +105,12 @@ def generate__magnetParts( side="+" ):
     z2 = h_slot
     z3 = h_slot + h_yoke - h_cut
     z4 = h_slot + h_yoke
-    generate__yoke    ( r1=r1, r2=r2, r3=r3, r4=r4, \
-                        z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
+    if ( side in ["+","+-","-+"] ):
+        generate__yoke    ( r1=r1, r2=r2, r3=r3, r4=r4, \
+                            z1=z1, z2=z2, z3=z3, z4=z4, side="+", hexahedral=hexahedral )
+    if ( side in ["-","+-","-+"] ):
+        generate__yoke    ( r1=r1, r2=r2, r3=r3, r4=r4, \
+                            z1=z1, z2=z2, z3=z3, z4=z4, side="-", hexahedral=hexahedral )
     
     # ------------------------------------------------- #
     # --- [4]  outside Air making                   --- #
@@ -90,8 +123,12 @@ def generate__magnetParts( side="+" ):
     z3 = h_slot + h_yoke
     z2 = h_slot + h_yoke - h_cut
     z4 = h_slot + h_yoke + h_oair
-    generate__outAir  ( r1=r1, r2=r2, r3=r3, r4=r4, \
-                        z1=z1, z2=z2, z3=z3, z4=z4, side=side, hexahedral=hexahedral )
+    if ( side in ["+","+-","-+"] ):
+        generate__outAir  ( r1=r1, r2=r2, r3=r3, r4=r4, \
+                            z1=z1, z2=z2, z3=z3, z4=z4, side="+", hexahedral=hexahedral )
+    if ( side in ["-","+-","-+"] ):
+        generate__outAir  ( r1=r1, r2=r2, r3=r3, r4=r4, \
+                            z1=z1, z2=z2, z3=z3, z4=z4, side="-", hexahedral=hexahedral )
     
 
     

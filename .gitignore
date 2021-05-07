@@ -1,2 +1,6 @@
-msh/*.*
+msh/*/*
+msh/*.step
+msh/*.msh
+msh/*.geo_unrolled
+msh/*.bdf
 png/*.png

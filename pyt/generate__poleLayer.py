@@ -7,8 +7,7 @@ import gmsh
 # ===  generate pole parts of the magnet                === #
 # ========================================================= #
 
-def generate__poleLayer( lc=0.0, side="+", z1=0.0, z2=0.7, z3=1.0, radius=1.0, \
-                         nodFile="dat/onmesh.dat", mshFile="dat/mesh.elements" ):
+def generate__poleLayer( lc=0.0, side="+", z1=0.0, z2=0.7, z3=1.0, radius=1.0 ):
 
     # ------------------------------------------------- #
     # --- [1] preparation                           --- #
@@ -18,12 +17,23 @@ def generate__poleLayer( lc=0.0, side="+", z1=0.0, z2=0.7, z3=1.0, radius=1.0, \
     x_,y_,z_          = 0, 1, 2
     origin            = [ 0.0, 0.0, 0.0 ]
     lineDim, surfDim  = 1, 2
-    
+
     #  -- [1-2] load point Data                     --  #
+    if   ( side == "+" ):
+        nodFile = "dat/onmesh_right.dat"
+        mshFile = "dat/mesh_right.elements"
+    elif ( side == "-" ):
+        nodFile = "dat/onmesh_left.dat"
+        mshFile = "dat/mesh_left.elements"
+    else:
+        print( "[generate__poleLayer] side == {0} ??? ERROR! ".format( side ) )
+        sys.exit()
+    
+    #  -- [1-3] load point Data                     --  #
     import nkUtilities.load__pointFile as lpf
     pointData         = lpf.load__pointFile( inpFile=nodFile, returnType="point" )
 
-    #  -- [1-3] load connectivities                 --  #
+    #  -- [1-4] load connectivities                 --  #
     with open( mshFile, "r" ) as f:
         connectivities=np.loadtxt( f )
     connectivities    = np.array( connectivities[:,3:], dtype=np.int64 )
@@ -93,7 +103,7 @@ def generate__poleLayer( lc=0.0, side="+", z1=0.0, z2=0.7, z3=1.0, radius=1.0, \
                                         side=side, defineVolu=True )
     
     # ------------------------------------------------- #
-    # --- [10] post-process                          --- #
+    # --- [10] post-process                         --- #
     # ------------------------------------------------- #
     gmsh.model.occ.synchronize()
     gmsh.model.occ.removeAllDuplicates()

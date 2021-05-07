@@ -37,11 +37,7 @@ def make__magnet():
         const["geometry.save_step"] = False
     else:
         import generate__magnetParts as mag
-        if ( side in [  "+",  "-" ] ):
-            mag.generate__magnetParts( side=side )
-        if ( side in [ "+-", "-+" ] ):
-            mag.generate__magnetParts( side="+" )
-            mag.generate__magnetParts( side="-" )
+        mag.generate__magnetParts( side=side )
         
     gmsh.model.occ.synchronize()
     gmsh.model.occ.removeAllDuplicates()
@@ -67,9 +63,13 @@ def make__magnet():
         physFile = "dat/phys_both.conf"
     else:
         sys.exit( "[make__magnet.py] side == {0} ??? ".format( side ) )
-        
-    import nkGmshRoutines.assign__meshsize as ams
-    meshes = ams.assign__meshsize( meshFile=meshFile, physFile=physFile )
+
+    if ( const["mesh.uniform"] ):
+        gmsh.option.setNumber( "Mesh.CharacteristicLengthMin", 0.2 )
+        gmsh.option.setNumber( "Mesh.CharacteristicLengthMax", 0.2 )
+    else:
+        import nkGmshRoutines.assign__meshsize as ams
+        meshes = ams.assign__meshsize( meshFile=meshFile, physFile=physFile )
 
     
     # ------------------------------------------------- #
