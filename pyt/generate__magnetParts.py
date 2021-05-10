@@ -43,8 +43,17 @@ def generate__magnetParts( side="+" ):
     # --- [1] pole making                           --- #
     # ------------------------------------------------- #
     if ( const["geometry.flat_pole"] ):
-        generate__pole( r1=0.0, r2=r_pole, z1=0.0, z2=z_gap, z3=z_pole, \
-                        side=side, hexahedral=hexahedral )
+        if   ( side == "+" ):
+            generate__pole( r1=0.0, r2=r_pole, z1=0.0, z2=z_gap, z3=z_pole, z4=z_root, \
+                            side="+", hexahedral=hexahedral )
+            
+        elif ( side == "-" ):
+            generate__pole( r1=0.0, r2=r_pole, z1=0.0, z2=z_gap, z3=z_pole, z4=z_root, \
+                            side="-", hexahedral=hexahedral )
+
+        elif ( side in ["+-","-+"] ):
+            sys.exit( "[generate__magnetParts] side == both for flat_pole is not coded, now." )
+            
     else:
         if ( z_root != h_slot ):
             sys.exit( "[generate__magnetParts] incompatible slot-depth and pole-root-length")
@@ -53,7 +62,7 @@ def generate__magnetParts( side="+" ):
         if   ( side == "+" ):
             gpl.generate__poleLayer( side="+", z1=z_pole, z2=z_root, radius=r_pole )
 
-        if   ( side == "-" ):
+        elif ( side == "-" ):
             gpl.generate__poleLayer( side="-", z1=z_pole, z2=z_root, radius=r_pole )
 
         elif ( side in ["+-","-+"] ):
@@ -136,15 +145,20 @@ def generate__magnetParts( side="+" ):
 # ===  generate pole parts                              === #
 # ========================================================= #
 def generate__pole( lc=0.0, r1=0.0, r2=0.7, \
-                    z1=0.0, z2=0.2, z3=0.7, side="+", hexahedral=False ):
+                    z1=0.0, z2=0.2, z3=0.7, z4=1.0, side="+", hexahedral=False ):
     # ------------------------------------------------- #
     # --- [1] generate pole parts                   --- #
     # ------------------------------------------------- #
     origin  = [ 0.0, 0.0 ]
-    gap     = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, \
+    gap     = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, tag=-1, \
+                                       fuse=True, \
                                        zoffset=z1, height=z2-z1, defineVolu=True, side=side )
-    pole    = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, \
+    pole    = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, tag=-1, \
+                                       fuse=True, 
                                        zoffset=z2, height=z3-z2, defineVolu=True, side=side )
+    body    = sec.generate__sector180( lc=lc, r1=r1, r2=r2, hexahedral=hexahedral, tag=-1, \
+                                       fuse=True, 
+                                       zoffset=z3, height=z4-z3, defineVolu=True, side=side )
     return()
 
 
