@@ -59,7 +59,7 @@ def generate__poleLayer( lc=0.0, side="+", z1=0.0, z2=0.7, z3=1.0, radius=1.0 ):
     # --- [4] define floor & ceiling sector         --- #
     # ------------------------------------------------- #
     import nkGmshRoutines.generate__sector180 as sec
-    floor   = sec.generate__sector180( r1=0.0, r2=radius, zoffset=   0.0, \
+    floor   = sec.generate__sector180( r1=0.0, r2=radius, zoffset=0.0, \
                                        side=side, defineSurf=True )
     ceiling = sec.generate__sector180( r1=0.0, r2=radius, zoffset=z1, \
                                        side=side, defineSurf=True )
@@ -100,7 +100,7 @@ def generate__poleLayer( lc=0.0, side="+", z1=0.0, z2=0.7, z3=1.0, radius=1.0 ):
     # ------------------------------------------------- #
     height   = z2-z1
     root_vol = sec.generate__sector180( r1=0.0, r2=radius, zoffset=z1, height=height, \
-                                        side=side, defineVolu=True )
+                                        side=side, defineVolu=True, fuse=True )
     
     # ------------------------------------------------- #
     # --- [10] post-process                         --- #

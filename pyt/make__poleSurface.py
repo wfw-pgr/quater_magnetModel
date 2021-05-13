@@ -173,7 +173,7 @@ def convert__meshFormat( direction=None, side="+" ):
 # ===  interpolate__grid_to_mesh                        === #
 # ========================================================= #
 def interpolate__grid_to_mesh( gridFile="dat/mshape_svd.dat", meshFile="msh/mesh2d/mesh.nodes", \
-                               side="+" ):
+                               side="+", interpolation="cubic" ):
     
     if ( side == "+" ):
         omsFile = "dat/onmesh_right.dat"
@@ -197,9 +197,13 @@ def interpolate__grid_to_mesh( gridFile="dat/mshape_svd.dat", meshFile="msh/mesh
     # ------------------------------------------------- #
     # --- [2] interpolation 2D                      --- #
     # ------------------------------------------------- #
-    import nkInterpolator.interpolate__linear2D as li2
-    ret       = li2.interpolate__linear2D( gridData=gridData, pointData=meshData )
-
+    if   ( interpolation == "linear" ):
+        import nkInterpolator.interpolate__linear2D as li2
+        ret       = li2.interpolate__linear2D( gridData=gridData, pointData=meshData )
+    elif ( interpolation == "cubic"  ):
+        import nkInterpolator.interpolate__bicubic  as bic
+        ret       = bic.interpolate__bicubic( gridData=gridData, pointData=meshData )
+        
     # ------------------------------------------------- #
     # --- [3] save in a File                        --- #
     # ------------------------------------------------- #

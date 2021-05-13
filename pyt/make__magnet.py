@@ -22,6 +22,7 @@ def make__magnet():
     # ------------------------------------------------- #
     gmsh.initialize()
     gmsh.option.setNumber( "General.Terminal", 1 )
+    gmsh.option.setNumber( "Geometry.ToleranceBoolean", 1e-3 )
     gmsh.option.setNumber( "Mesh.Algorithm"  , const["mesh.algorithm2D"] )
     gmsh.option.setNumber( "Mesh.Algorithm3D", const["mesh.algorithm3D"] )
     gmsh.option.setNumber( "Mesh.SubdivisionAlgorithm", const["mesh.subdivision"] )
@@ -65,7 +66,6 @@ def make__magnet():
         gmsh.model.occ.synchronize()
         gmsh.write( "msh/model.geo_unrolled" )
 
-    
     # ------------------------------------------------- #
     # --- [4] save model                            --- #
     # ------------------------------------------------- #
@@ -87,8 +87,8 @@ def make__magnet():
         sys.exit( "[make__magnet.py] side == {0} ??? ".format( side ) )
 
     if ( const["mesh.uniform"] ):
-        gmsh.option.setNumber( "Mesh.CharacteristicLengthMin", 0.2 )
-        gmsh.option.setNumber( "Mesh.CharacteristicLengthMax", 0.2 )
+        gmsh.option.setNumber( "Mesh.CharacteristicLengthMin", 0.3 )
+        gmsh.option.setNumber( "Mesh.CharacteristicLengthMax", 0.3 )
     else:
         import nkGmshRoutines.assign__meshsize as ams
         meshes = ams.assign__meshsize( meshFile=meshFile, physFile=physFile )
@@ -144,3 +144,28 @@ def make__magnet():
 # ========================================================= #
 if ( __name__=="__main__" ):
     make__magnet()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import nkGmshRoutines.fuse__listed as fsl
+# if   ( side == "+" ):
+#     fusFile = "dat/fuse_right.conf"
+# elif ( side == "-" ):
+#     fusFile = "dat/fuse_left.conf"
+# elif ( side in ["+-","-+"] ):
+#     fusFile = "dat/fuse_both.conf"
+# else:
+#     sys.exit( "[make__magnet.py] side == {0} ??? ".format( side ) )
+# fsl.fuse__listed( inpFile=fusFile )
+    
